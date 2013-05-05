@@ -4,8 +4,8 @@
  */
 ?>
 <?php get_header() ?>
-
-	<div id="content">
+ 
+	<div id="content" class="span8 full-with">
 		<div class="padder">
 
 		<?php do_action( 'bp_before_blog_page' ) ?>
@@ -14,8 +14,8 @@
 
 			<?php if (have_posts()) : while (have_posts()) : the_post(); ?>
 
-				<h2 class="pagetitle"><?php the_title(); ?></h2>
-
+                <?php get_posts_titles(get_the_title(), get_the_ID());?>
+            
 				<div id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
 					<div class="entry">

@@ -1,6 +1,6 @@
 <?php get_header() ?>
 
-	<div id="content">
+    <div id="content" class="span8">
 		<div class="padder">
 
 			<?php do_action( 'bp_before_blog_single_post' ) ?>
@@ -38,7 +38,7 @@
 						}
 						?>		
 						<?php if($cc_post_options['cc_post_template_avatar'] != '1') { ?>
-							<div class="author-box">
+							<div class="author-box visible-desktop">
 								<?php echo get_avatar( get_the_author_meta( 'user_email' ), '50' ); ?>
 								<?php if(defined('BP_VERSION')){ ?>
 									<p><?php printf( __( 'by %s', 'cc' ), bp_core_get_userlink( $post->post_author ) ) ?></p>
@@ -46,12 +46,13 @@
 							</div>
 						<?php } ?>
 						
-						<div class="post-content" style="<?php if($cc_post_options['cc_post_template_avatar'] == '1') { echo 'margin-left:0;'; } ?>">	
+						<div class="post-content span11" style="<?php if($cc_post_options['cc_post_template_avatar'] == '1') { echo 'margin-left:0;'; } ?>">	
 							<?php if ($single_class != false){ ?>
 								<div class="<?php echo $single_class ?>">
 							<?php } ?>
-			
-							<h2 class="posttitle"><a href="<?php the_permalink() ?>" rel="bookmark" title="<?php _e( 'Permanent Link to', 'cc' ) ?> <?php the_title_attribute(); ?>"><?php the_title(); ?></a></h2>
+                                    
+                            <?php get_posts_titles(get_the_title(), get_the_ID()); ?>
+
 							<?php if($cc_post_options['cc_post_template_date'] != '1') {?>
 								<p class="date"><?php the_time('F j, Y') ?> <em><?php _e( 'in', 'cc' ) ?> <?php the_category(', ') ?> <?php if(defined('BP_VERSION')){  printf( __( ' by %s', 'cc' ), bp_core_get_userlink( $post->post_author ) ); }?></em></p>
 							<?php } ?> 
@@ -89,7 +90,7 @@
 						</div>
 					</div>
 	
-					<?php edit_post_link( __( 'Edit this entry.', 'cc' ), '<p>', '</p>'); ?>
+					<?php edit_post_link( __( 'Edit this entry.', 'cc' ), '<p class="edit-post-link">', '</p>'); ?>
 	
 					<?php comments_template(); ?>
 		

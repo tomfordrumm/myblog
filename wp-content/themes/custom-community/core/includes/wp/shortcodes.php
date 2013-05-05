@@ -43,11 +43,11 @@ add_shortcode('cc_h_line', 'h_line');
 function facebook_like() { 
     $pageURL = 'http';
 
-    if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
+    if (!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
     
     $pageURL .= "://";
     
-    if ($_SERVER["SERVER_PORT"] != "80") {
+    if (!empty($_SERVER["SERVER_PORT"]) && $_SERVER["SERVER_PORT"] != "80") {
         $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
     } else {
         $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
@@ -314,6 +314,7 @@ function cc_list_posts($atts,$content = null) {
     
     extract(shortcode_atts(array(
         'amount'        => '12',
+        'category__in'  => array(),
         'category_name' => '0',
         'img_position'  => 'mouse_over',
         'height'        => 'auto',
@@ -321,6 +322,9 @@ function cc_list_posts($atts,$content = null) {
         'post_type'     => 'post',
         'orderby'       => '',
         'order'         => '',
+        'year'          => '',
+        'tag'           => '',
+        'monthnum'      => ''
     ), $atts));
 
     switch ($img_position){
@@ -333,40 +337,45 @@ function cc_list_posts($atts,$content = null) {
         case 'over':
             $img_position = 'posts-img-over-content';
             break;
-        case 'under':
+        case 'under': 
             $img_position = 'posts-img-under-content';
             break;
         case 'mouse_over':
             $img_position = 'boxgrid';
             break;
         }
-        
-    if($category_name == 'all-categories'){
-        $category_name = '0';
+
+    if (!is_array($category__in)) {
+        $category__in = explode(',', $category__in);
     }
-        
+
     if($page_id != ''){
         $page_id = explode(',',$page_id);
     }
-    
+    $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
     $args = array(
         'orderby'        => $orderby,
         'order'          => $order,
         'post_type'      => $post_type,
         'post__in'       => $page_id,
+        'year'           => $year,
+        'monthnum'       => $monthnum,
+        'category__in'   => $category__in,
         'category_name'  => $category_name,
-        'posts_per_page' => $amount
+        'posts_per_page' => $amount,
+        'tag'            => $tag,
+        'paged'          => $paged
     );
-    
+
     remove_all_filters('posts_orderby');
     query_posts($args);
-    
+
     if (have_posts()) {
         $thePath = array();
         $pattern = "/(?<=src=['|\"])[^'|\"]*?(?=['|\"])/i";
         while (have_posts()) : the_post();
             if($img_position == 'boxgrid'){
-                $thumb   = get_the_post_thumbnail( $post->ID, 'post-thumbnail' );
+                $thumb   = get_the_post_thumbnail( $post->ID, 'post-thumbnail', __('List post image', 'cc') );
                 preg_match($pattern, $thumb, $thePath);
                 if(!isset($thePath[0])){
                     $thePath[0] = get_template_directory_uri().'/images/slideshow/noftrdimg-222x160.jpg';
@@ -375,16 +384,16 @@ function cc_list_posts($atts,$content = null) {
                 $tmp .= '<a href="'. get_permalink().'" title="'. get_the_title().'"><img src="'.$thePath[0].'" /></a>';
                 $tmp .= '<div class="cover boxcaption">';
                 $tmp .= '<h3><a href="'. get_permalink().'" title="'. get_the_title().'">'. get_the_title().'</a></h3>';
-                $tmp .= '<p><a href="'. get_permalink().'" title="'. get_the_title().'">'.substr(get_the_excerpt(), 0, 100).'...</a></p>';
+                $tmp .= '<p class="hidden-phone"><a href="'. get_permalink().'" title="'. get_the_title().'">'. get_the_excerpt().'...</a></p>';
                 $tmp .= '</div>';
                 $tmp .= '</div>'; 
             } else {
                 $tmp .= '<div class="listposts '.$img_position.'">';
-                if($img_position != 'posts-img-under-content') $tmp .= '<a href="'.get_permalink().'" title="'.get_the_title().'">'.get_the_post_thumbnail().'</a>';
+                if($img_position != 'posts-img-under-content') $tmp .= '<a href="'.get_permalink().'" title="'.get_the_title().'">'.get_the_post_thumbnail($post->ID, 'post-thumbnail', array('alt' => get_the_title())).'</a>';
                 $tmp .= '<h3><a href="'.get_permalink().'" title="'.get_the_title().'">'.get_the_title().'</a></h3>';
                 if($height != 'auto'){ $height = str_replace('px','',$height).'px'; }
                 $tmp .= '<p style="height:'.$height.';">'. get_the_excerpt().'</p>';
-                if($img_position == 'posts-img-under-content') $tmp .= '<a href="'.get_permalink().'" title="'.get_the_title().'">'.get_the_post_thumbnail().'</a>';
+                if($img_position == 'posts-img-under-content') $tmp .= '<a href="'.get_permalink().'" title="'.get_the_title().'">'.get_the_post_thumbnail($post->ID, 'post-thumbnail', array('alt' => get_the_title())).'</a>';
                 $tmp .= '</div>';
                 if($img_position == 'posts-img-left-content-right' || $img_position == 'posts-img-right-content-left') $tmp .= '<div class="clear"></div>';    
             }
@@ -399,7 +408,7 @@ function cc_list_posts($atts,$content = null) {
 
     wp_reset_query();
     
-    return '<div class="list-posts-all">'.$tmp.'</div>&nbsp;';
+    return '<div class="list-posts-all phone-hidden">'.$tmp.'</div>&nbsp;';
 }
 add_shortcode('cc_list_posts', 'cc_list_posts');
 
